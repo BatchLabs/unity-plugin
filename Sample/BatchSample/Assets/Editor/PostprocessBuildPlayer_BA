@@ -1,0 +1,48 @@
+#!/usr/bin/python
+
+from mod_pbxproj import *
+import os
+import shutil
+import zipfile
+import sys
+
+frameworks = [
+  'CoreTelephony.framework',
+  'Security.framework'
+]
+
+pbx_file_path = sys.argv[1] + '/Unity-iPhone.xcodeproj/project.pbxproj'
+pbx_object = XcodeProject.Load(pbx_file_path)
+for framework in frameworks:
+  pbx_object.add_file_if_doesnt_exist('System/Library/' + framework, tree='SDKROOT')
+
+pbx_object.add_file_if_doesnt_exist('System/Library/libsqlite3.dylib', tree='SDKROOT')
+
+pbx_object.add_file_if_doesnt_exist('Libraries/BatchBridge.framework', tree='SOURCE_ROOT')
+pbx_object.add_file_if_doesnt_exist('Libraries/Batch.bundle', tree='SOURCE_ROOT')
+
+pbx_object.add_other_ldflags("-ObjC")
+
+pbx_object.add_framework_search_paths('${SRCROOT}/Libraries')
+
+pbx_object.save()
+
+
+# Unzip the file, but delete the old framework first
+base_framework_path = sys.argv[1] + '/Libraries/Plugins/iOS'
+extract_path = sys.argv[1] + '/Libraries'
+# Check if Unity 5, fall back on 4
+if not os.path.exists(base_framework_path):
+	base_framework_path = extract_path
+
+old_framework_path = base_framework_path + '/BatchBridge.framework'
+bundle_path = base_framework_path + '/BatchBridge.framework'
+zip_framework_path = old_framework_path + '.zip.h'
+shutil.rmtree(old_framework_path, True)
+shutil.rmtree(bundle_path, True)
+
+with zipfile.ZipFile(zip_framework_path) as zip:
+	zip.extractall(extract_path + '/')
+
+shutil.rmtree(base_framework_path + '/__MACOSX', True)
+os.remove(zip_framework_path)

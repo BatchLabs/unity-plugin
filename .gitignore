@@ -1,0 +1,9 @@
+Sample/BatchSample/Temp/
+Sample/BatchSample/Obj/
+Sample/BatchSample/UnityGenerated/
+Sample/BatchSample/ExportedObj/
+Sample/BatchSample/Library/
+*.userprefs
+*.suo
+*.svd
+*.pidb
